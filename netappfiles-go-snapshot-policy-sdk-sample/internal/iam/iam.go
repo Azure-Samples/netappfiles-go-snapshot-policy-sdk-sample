@@ -18,18 +18,19 @@ import (
 
 	"github.com/Azure-Samples/netappfiles-go-snapshot-policy-sdk-sample/netappfiles-go-snapshot-policy-sdk-sample/internal/models"
 	"github.com/Azure-Samples/netappfiles-go-snapshot-policy-sdk-sample/netappfiles-go-snapshot-policy-sdk-sample/internal/utils"
-
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 )
 
 // GetAuthorizer gets an authorization token to be used within ANF client
-func GetAuthorizer() (autorest.Authorizer, string, error) {
-
+func GetAuthorizer() (azcore.TokenCredential, string, error) {
 	// Getting information from authentication file
 	info, err := readAuthJSON(os.Getenv("AZURE_AUTH_LOCATION"))
+	if err != nil {
+		return nil, "", err
+	}
 
-	authorizer, err := auth.NewAuthorizerFromFile(*info.ResourceManagerEndpointURL)
+	authorizer, err := azidentity.NewClientSecretCredential(*info.TenantID, *info.ClientID, *info.ClientSecret, nil)
 	if err != nil {
 		utils.ConsoleOutput(fmt.Sprintf("%v", err))
 		return nil, "", err
