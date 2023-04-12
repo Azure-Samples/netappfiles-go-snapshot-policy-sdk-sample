@@ -19,9 +19,9 @@ import (
 	"github.com/Azure-Samples/netappfiles-go-snapshot-policy-sdk-sample/netappfiles-go-snapshot-policy-sdk-sample/internal/uri"
 	"github.com/Azure-Samples/netappfiles-go-snapshot-policy-sdk-sample/netappfiles-go-snapshot-policy-sdk-sample/internal/utils"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/netapp/mgmt/netapp"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
 
 const (
@@ -35,114 +35,112 @@ var (
 	validProtocols = []string{nfsv3, nfsv41, cifs}
 )
 
-func validateANFServiceLevel(serviceLevel string) (validatedServiceLevel netapp.ServiceLevel, err error) {
-
-	var svcLevel netapp.ServiceLevel
+func validateANFServiceLevel(serviceLevel string) (validatedServiceLevel armnetapp.ServiceLevel, err error) {
+	var svcLevel armnetapp.ServiceLevel
 
 	switch strings.ToLower(serviceLevel) {
 	case "ultra":
-		svcLevel = netapp.ServiceLevelUltra
+		svcLevel = armnetapp.ServiceLevelUltra
 	case "premium":
-		svcLevel = netapp.ServiceLevelPremium
+		svcLevel = armnetapp.ServiceLevelPremium
 	case "standard":
-		svcLevel = netapp.ServiceLevelStandard
+		svcLevel = armnetapp.ServiceLevelStandard
 	default:
-		return "", fmt.Errorf("invalid service level, supported service levels are: %v", netapp.PossibleServiceLevelValues())
+		return "", fmt.Errorf("invalid service level, supported service levels are: %v", armnetapp.PossibleServiceLevelValues())
 	}
 
 	return svcLevel, nil
 }
 
-func getResourcesClient() (resources.Client, error) {
-
-	authorizer, subscriptionID, err := iam.GetAuthorizer()
+func getResourcesClient() (*armresources.Client, error) {
+	cred, subscriptionID, err := iam.GetAuthorizer()
 	if err != nil {
-		return resources.Client{}, err
+		return nil, err
 	}
 
-	client := resources.NewClient(subscriptionID)
-	client.Authorizer = authorizer
-	client.AddToUserAgent(userAgent)
+	client, err := armresources.NewClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return client, nil
 }
 
-func getAccountsClient() (netapp.AccountsClient, error) {
-
-	authorizer, subscriptionID, err := iam.GetAuthorizer()
+func getAccountsClient() (*armnetapp.AccountsClient, error) {
+	cred, subscriptionID, err := iam.GetAuthorizer()
 	if err != nil {
-		return netapp.AccountsClient{}, err
+		return nil, err
 	}
 
-	client := netapp.NewAccountsClient(subscriptionID)
-	client.Authorizer = authorizer
-	client.AddToUserAgent(userAgent)
+	client, err := armnetapp.NewAccountsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return client, nil
 }
 
-func getPoolsClient() (netapp.PoolsClient, error) {
-
-	authorizer, subscriptionID, err := iam.GetAuthorizer()
+func getPoolsClient() (*armnetapp.PoolsClient, error) {
+	cred, subscriptionID, err := iam.GetAuthorizer()
 	if err != nil {
-		return netapp.PoolsClient{}, err
+		return nil, err
 	}
 
-	client := netapp.NewPoolsClient(subscriptionID)
-	client.Authorizer = authorizer
-	client.AddToUserAgent(userAgent)
+	client, err := armnetapp.NewPoolsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return client, nil
 }
 
-func getVolumesClient() (netapp.VolumesClient, error) {
-
-	authorizer, subscriptionID, err := iam.GetAuthorizer()
+func getVolumesClient() (*armnetapp.VolumesClient, error) {
+	cred, subscriptionID, err := iam.GetAuthorizer()
 	if err != nil {
-		return netapp.VolumesClient{}, err
+		return nil, err
 	}
 
-	client := netapp.NewVolumesClient(subscriptionID)
-	client.Authorizer = authorizer
-	client.AddToUserAgent(userAgent)
+	client, err := armnetapp.NewVolumesClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return client, nil
 }
 
-func getSnapshotsClient() (netapp.SnapshotsClient, error) {
-
-	authorizer, subscriptionID, err := iam.GetAuthorizer()
+func getSnapshotsClient() (*armnetapp.SnapshotsClient, error) {
+	cred, subscriptionID, err := iam.GetAuthorizer()
 	if err != nil {
-		return netapp.SnapshotsClient{}, err
+		return nil, err
 	}
 
-	client := netapp.NewSnapshotsClient(subscriptionID)
-	client.Authorizer = authorizer
-	client.AddToUserAgent(userAgent)
+	client, err := armnetapp.NewSnapshotsClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return client, nil
 }
 
-func getSnapshotPoliciesClient() (netapp.SnapshotPoliciesClient, error) {
-
-	authorizer, subscriptionID, err := iam.GetAuthorizer()
+func getSnapshotPoliciesClient() (*armnetapp.SnapshotPoliciesClient, error) {
+	cred, subscriptionID, err := iam.GetAuthorizer()
 	if err != nil {
-		return netapp.SnapshotPoliciesClient{}, err
+		return nil, err
 	}
 
-	client := netapp.NewSnapshotPoliciesClient(subscriptionID)
-	client.Authorizer = authorizer
-	client.AddToUserAgent(userAgent)
+	client, err := armnetapp.NewSnapshotPoliciesClient(subscriptionID, cred, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return client, nil
 }
 
 // GetResourceByID gets a generic resource
-func GetResourceByID(ctx context.Context, resourceID, APIVersion string) (resources.GenericResource, error) {
-
+func GetResourceByID(ctx context.Context, resourceID, APIVersion string) (armresources.ClientGetResponse, error) {
 	resourcesClient, err := getResourcesClient()
 	if err != nil {
-		return resources.GenericResource{}, err
+		return armresources.ClientGetResponse{}, err
 	}
 
 	parentResource := ""
@@ -165,219 +163,226 @@ func GetResourceByID(ctx context.Context, resourceID, APIVersion string) (resour
 		resourceType,
 		resourceName,
 		APIVersion,
+		nil,
 	)
 }
 
 // CreateANFAccount creates an ANF Account resource
-func CreateANFAccount(ctx context.Context, location, resourceGroupName, accountName string, activeDirectories []netapp.ActiveDirectory, tags map[string]*string) (netapp.Account, error) {
-
+func CreateANFAccount(ctx context.Context, location, resourceGroupName, accountName string, activeDirectories []*armnetapp.ActiveDirectory, tags map[string]*string) (*armnetapp.Account, error) {
 	accountClient, err := getAccountsClient()
 	if err != nil {
-		return netapp.Account{}, err
+		return nil, err
 	}
 
-	accountProperties := netapp.AccountProperties{}
+	accountProperties := armnetapp.AccountProperties{}
 
 	if activeDirectories != nil {
-		accountProperties = netapp.AccountProperties{
-			ActiveDirectories: &activeDirectories,
+		accountProperties = armnetapp.AccountProperties{
+			ActiveDirectories: activeDirectories,
 		}
 	}
 
-	future, err := accountClient.CreateOrUpdate(
+	future, err := accountClient.BeginCreateOrUpdate(
 		ctx,
-		netapp.Account{
-			Location:          to.StringPtr(location),
-			Tags:              tags,
-			AccountProperties: &accountProperties,
-		},
 		resourceGroupName,
 		accountName,
+		armnetapp.Account{
+			Location:   to.Ptr(location),
+			Tags:       tags,
+			Properties: &accountProperties,
+		},
+		nil,
 	)
 	if err != nil {
-		return netapp.Account{}, fmt.Errorf("cannot create account: %v", err)
+		return nil, fmt.Errorf("cannot create account: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, accountClient.Client)
+	resp, err := future.PollUntilDone(ctx, nil)
 	if err != nil {
-		return netapp.Account{}, fmt.Errorf("cannot get the account create or update future response: %v", err)
+		return nil, fmt.Errorf("cannot get the account create or update future response: %v", err)
 	}
 
-	return future.Result(accountClient)
+	return &resp.Account, nil
 }
 
 // CreateANFCapacityPool creates an ANF Capacity Pool within ANF Account
-func CreateANFCapacityPool(ctx context.Context, location, resourceGroupName, accountName, poolName, serviceLevel string, sizeBytes int64, tags map[string]*string) (netapp.CapacityPool, error) {
-
+func CreateANFCapacityPool(ctx context.Context, location, resourceGroupName, accountName, poolName, serviceLevel string, sizeBytes int64, tags map[string]*string) (*armnetapp.CapacityPool, error) {
 	poolClient, err := getPoolsClient()
 	if err != nil {
-		return netapp.CapacityPool{}, err
+		return nil, err
 	}
 
 	svcLevel, err := validateANFServiceLevel(serviceLevel)
 	if err != nil {
-		return netapp.CapacityPool{}, err
+		return nil, err
 	}
 
-	future, err := poolClient.CreateOrUpdate(
+	future, err := poolClient.BeginCreateOrUpdate(
 		ctx,
-		netapp.CapacityPool{
-			Location: to.StringPtr(location),
-			Tags:     tags,
-			PoolProperties: &netapp.PoolProperties{
-				ServiceLevel: svcLevel,
-				Size:         to.Int64Ptr(sizeBytes),
-			},
-		},
 		resourceGroupName,
 		accountName,
 		poolName,
+		armnetapp.CapacityPool{
+			Location: to.Ptr(location),
+			Tags:     tags,
+			Properties: &armnetapp.PoolProperties{
+				ServiceLevel: &svcLevel,
+				Size:         to.Ptr[int64](sizeBytes),
+			},
+		},
+		nil,
 	)
-
 	if err != nil {
-		return netapp.CapacityPool{}, fmt.Errorf("cannot create pool: %v", err)
+		return nil, fmt.Errorf("cannot create pool: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, poolClient.Client)
+	resp, err := future.PollUntilDone(ctx, nil)
 	if err != nil {
-		return netapp.CapacityPool{}, fmt.Errorf("cannot get the pool create or update future response: %v", err)
+		return nil, fmt.Errorf("cannot get the pool create or update future response: %v", err)
 	}
 
-	return future.Result(poolClient)
+	return &resp.CapacityPool, nil
 }
 
 // CreateANFVolume creates an ANF volume within a Capacity Pool
-func CreateANFVolume(ctx context.Context, location, resourceGroupName, accountName, poolName, volumeName, serviceLevel, subnetID, snapshotID string, protocolTypes []string, volumeUsageQuota int64, unixReadOnly, unixReadWrite bool, tags map[string]*string, dataProtectionObject netapp.VolumePropertiesDataProtection) (netapp.Volume, error) {
-
+func CreateANFVolume(ctx context.Context, location, resourceGroupName, accountName, poolName, volumeName, serviceLevel, subnetID, snapshotID string, protocolTypes []string, volumeUsageQuota int64, unixReadOnly, unixReadWrite bool, tags map[string]*string, dataProtectionObject armnetapp.VolumePropertiesDataProtection) (*armnetapp.Volume, error) {
 	if len(protocolTypes) > 2 {
-		return netapp.Volume{}, fmt.Errorf("maximum of two protocol types are supported")
+		return nil, fmt.Errorf("maximum of two protocol types are supported")
 	}
 
 	if len(protocolTypes) > 1 && utils.Contains(protocolTypes, "NFSv4.1") {
-		return netapp.Volume{}, fmt.Errorf("only cifs/nfsv3 protocol types are supported as dual protocol")
+		return nil, fmt.Errorf("only cifs/nfsv3 protocol types are supported as dual protocol")
 	}
 
 	_, found := utils.FindInSlice(validProtocols, protocolTypes[0])
 	if !found {
-		return netapp.Volume{}, fmt.Errorf("invalid protocol type, valid protocol types are: %v", validProtocols)
+		return nil, fmt.Errorf("invalid protocol type, valid protocol types are: %v", validProtocols)
 	}
 
 	svcLevel, err := validateANFServiceLevel(serviceLevel)
 	if err != nil {
-		return netapp.Volume{}, err
+		return nil, err
 	}
 
 	volumeClient, err := getVolumesClient()
 	if err != nil {
-		return netapp.Volume{}, err
+		return nil, err
 	}
 
-	exportPolicy := netapp.VolumePropertiesExportPolicy{}
+	exportPolicy := armnetapp.VolumePropertiesExportPolicy{}
 
 	if _, found := utils.FindInSlice(protocolTypes, cifs); !found {
-		exportPolicy = netapp.VolumePropertiesExportPolicy{
-			Rules: &[]netapp.ExportPolicyRule{
+		exportPolicy = armnetapp.VolumePropertiesExportPolicy{
+			Rules: []*armnetapp.ExportPolicyRule{
 				{
-					AllowedClients: to.StringPtr("0.0.0.0/0"),
-					Cifs:           to.BoolPtr(map[bool]bool{true: true, false: false}[protocolTypes[0] == cifs]),
-					Nfsv3:          to.BoolPtr(map[bool]bool{true: true, false: false}[protocolTypes[0] == nfsv3]),
-					Nfsv41:         to.BoolPtr(map[bool]bool{true: true, false: false}[protocolTypes[0] == nfsv41]),
-					RuleIndex:      to.Int32Ptr(1),
-					UnixReadOnly:   to.BoolPtr(unixReadOnly),
-					UnixReadWrite:  to.BoolPtr(unixReadWrite),
+					AllowedClients: to.Ptr("0.0.0.0/0"),
+					Cifs:           to.Ptr(map[bool]bool{true: true, false: false}[protocolTypes[0] == cifs]),
+					Nfsv3:          to.Ptr(map[bool]bool{true: true, false: false}[protocolTypes[0] == nfsv3]),
+					Nfsv41:         to.Ptr(map[bool]bool{true: true, false: false}[protocolTypes[0] == nfsv41]),
+					RuleIndex:      to.Ptr[int32](1),
+					UnixReadOnly:   to.Ptr(unixReadOnly),
+					UnixReadWrite:  to.Ptr(unixReadWrite),
 				},
 			},
 		}
 	}
 
-	volumeProperties := netapp.VolumeProperties{
-		SnapshotID:     map[bool]*string{true: to.StringPtr(snapshotID), false: nil}[snapshotID != ""],
-		ExportPolicy:   map[bool]*netapp.VolumePropertiesExportPolicy{true: &exportPolicy, false: nil}[protocolTypes[0] != cifs],
-		ProtocolTypes:  &protocolTypes,
-		ServiceLevel:   svcLevel,
-		SubnetID:       to.StringPtr(subnetID),
-		UsageThreshold: to.Int64Ptr(volumeUsageQuota),
-		CreationToken:  to.StringPtr(volumeName),
+	protocolTypeSlice := make([]*string, len(protocolTypes))
+	for i, protocolType := range protocolTypes {
+		protocolTypeSlice[i] = &protocolType
+	}
+
+	volumeProperties := armnetapp.VolumeProperties{
+		SnapshotID:     map[bool]*string{true: to.Ptr(snapshotID), false: nil}[snapshotID != ""],
+		ExportPolicy:   map[bool]*armnetapp.VolumePropertiesExportPolicy{true: &exportPolicy, false: nil}[protocolTypes[0] != cifs],
+		ProtocolTypes:  protocolTypeSlice,
+		ServiceLevel:   &svcLevel,
+		SubnetID:       to.Ptr(subnetID),
+		UsageThreshold: to.Ptr[int64](volumeUsageQuota),
+		CreationToken:  to.Ptr(volumeName),
 		DataProtection: &dataProtectionObject,
 	}
 
-	future, err := volumeClient.CreateOrUpdate(
+	future, err := volumeClient.BeginCreateOrUpdate(
 		ctx,
-		netapp.Volume{
-			Location:         to.StringPtr(location),
-			Tags:             tags,
-			VolumeProperties: &volumeProperties,
-		},
 		resourceGroupName,
 		accountName,
 		poolName,
 		volumeName,
+		armnetapp.Volume{
+			Location:   to.Ptr(location),
+			Tags:       tags,
+			Properties: &volumeProperties,
+		},
+		nil,
 	)
-
 	if err != nil {
-		return netapp.Volume{}, fmt.Errorf("cannot create volume: %v", err)
+		return nil, fmt.Errorf("cannot create volume: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, volumeClient.Client)
+	resp, err := future.PollUntilDone(ctx, nil)
 	if err != nil {
-		return netapp.Volume{}, fmt.Errorf("cannot get the volume create or update future response: %v", err)
+		return nil, fmt.Errorf("cannot get the volume create or update future response: %v", err)
 	}
 
-	return future.Result(volumeClient)
+	return &resp.Volume, nil
 }
 
 // UpdateANFVolume update an ANF volume
-func UpdateANFVolume(ctx context.Context, location, resourceGroupName, accountName, poolName, volumeName string, volumePropertiesPatch netapp.VolumePatchProperties, tags map[string]*string) (netapp.VolumesUpdateFuture, error) {
-
+func UpdateANFVolume(ctx context.Context, location, resourceGroupName, accountName, poolName, volumeName string, volumePropertiesPatch armnetapp.VolumePatchProperties, tags map[string]*string) (*armnetapp.Volume, error) {
 	volumeClient, err := getVolumesClient()
 	if err != nil {
-		return netapp.VolumesUpdateFuture{}, err
+		return nil, err
 	}
 
-	volume, err := volumeClient.Update(
+	future, err := volumeClient.BeginUpdate(
 		ctx,
-		netapp.VolumePatch{
-			Location:              to.StringPtr(location),
-			Tags:                  tags,
-			VolumePatchProperties: &volumePropertiesPatch,
-		},
 		resourceGroupName,
 		accountName,
 		poolName,
 		volumeName,
+		armnetapp.VolumePatch{
+			Location:   to.Ptr(location),
+			Tags:       tags,
+			Properties: &volumePropertiesPatch,
+		},
+		nil,
 	)
-
 	if err != nil {
-		return netapp.VolumesUpdateFuture{}, fmt.Errorf("cannot update volume: %v", err)
+		return nil, fmt.Errorf("cannot update volume: %v", err)
 	}
 
-	return volume, nil
+	resp, err := future.PollUntilDone(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Volume, nil
 }
 
 // AuthorizeReplication - authorizes volume replication
 func AuthorizeReplication(ctx context.Context, resourceGroupName, accountName, poolName, volumeName, remoteVolumeResourceID string) error {
-
 	volumeClient, err := getVolumesClient()
 	if err != nil {
 		return err
 	}
 
-	future, err := volumeClient.AuthorizeReplication(
+	future, err := volumeClient.BeginAuthorizeReplication(
 		ctx,
 		resourceGroupName,
 		accountName,
 		poolName,
 		volumeName,
-		netapp.AuthorizeRequest{
-			RemoteVolumeResourceID: to.StringPtr(remoteVolumeResourceID),
+		armnetapp.AuthorizeRequest{
+			RemoteVolumeResourceID: to.Ptr(remoteVolumeResourceID),
 		},
+		nil,
 	)
-
 	if err != nil {
 		return fmt.Errorf("cannot authorize volume replication: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, volumeClient.Client)
+	_, err = future.PollUntilDone(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("cannot get authorize volume replication future response: %v", err)
 	}
@@ -387,25 +392,24 @@ func AuthorizeReplication(ctx context.Context, resourceGroupName, accountName, p
 
 // DeleteANFVolumeReplication - authorizes volume replication
 func DeleteANFVolumeReplication(ctx context.Context, resourceGroupName, accountName, poolName, volumeName string) error {
-
 	volumeClient, err := getVolumesClient()
 	if err != nil {
 		return err
 	}
 
-	future, err := volumeClient.DeleteReplication(
+	future, err := volumeClient.BeginDeleteReplication(
 		ctx,
 		resourceGroupName,
 		accountName,
 		poolName,
 		volumeName,
+		nil,
 	)
-
 	if err != nil {
 		return fmt.Errorf("cannot delete volume replication: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, volumeClient.Client)
+	_, err = future.PollUntilDone(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("cannot get delete volume replication future response: %v", err)
 	}
@@ -414,59 +418,58 @@ func DeleteANFVolumeReplication(ctx context.Context, resourceGroupName, accountN
 }
 
 // CreateANFSnapshot creates a Snapshot from an ANF volume
-func CreateANFSnapshot(ctx context.Context, location, resourceGroupName, accountName, poolName, volumeName, snapshotName string, tags map[string]*string) (netapp.Snapshot, error) {
+func CreateANFSnapshot(ctx context.Context, location, resourceGroupName, accountName, poolName, volumeName, snapshotName string, tags map[string]*string) (*armnetapp.Snapshot, error) {
 
 	snapshotClient, err := getSnapshotsClient()
 	if err != nil {
-		return netapp.Snapshot{}, err
+		return nil, err
 	}
 
-	future, err := snapshotClient.Create(
+	future, err := snapshotClient.BeginCreate(
 		ctx,
-		netapp.Snapshot{
-			Location: to.StringPtr(location),
-		},
 		resourceGroupName,
 		accountName,
 		poolName,
 		volumeName,
 		snapshotName,
+		armnetapp.Snapshot{
+			Location: to.Ptr(location),
+		},
+		nil,
 	)
-
 	if err != nil {
-		return netapp.Snapshot{}, fmt.Errorf("cannot create snapshot: %v", err)
+		return nil, fmt.Errorf("cannot create snapshot: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, snapshotClient.Client)
+	resp, err := future.PollUntilDone(ctx, nil)
 	if err != nil {
-		return netapp.Snapshot{}, fmt.Errorf("cannot get the snapshot create or update future response: %v", err)
+		return nil, fmt.Errorf("cannot get the snapshot create or update future response: %v", err)
 	}
 
-	return future.Result(snapshotClient)
+	return &resp.Snapshot, nil
 }
 
 // DeleteANFSnapshot deletes a Snapshot from an ANF volume
 func DeleteANFSnapshot(ctx context.Context, resourceGroupName, accountName, poolName, volumeName, snapshotName string) error {
-
 	snapshotClient, err := getSnapshotsClient()
 	if err != nil {
 		return err
 	}
 
-	future, err := snapshotClient.Delete(
+	future, err := snapshotClient.BeginDelete(
 		ctx,
 		resourceGroupName,
 		accountName,
 		poolName,
 		volumeName,
 		snapshotName,
+		nil,
 	)
-
 	if err != nil {
 		return fmt.Errorf("cannot delete snapshot: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, snapshotClient.Client)
+	_, err = future.PollUntilDone(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("cannot get the snapshot delete future response: %v", err)
 	}
@@ -475,72 +478,74 @@ func DeleteANFSnapshot(ctx context.Context, resourceGroupName, accountName, pool
 }
 
 // CreateANFSnapshotPolicy creates a Snapshot Policy to be used on volumes
-func CreateANFSnapshotPolicy(ctx context.Context, resourceGroupName, accountName, policyName string, policy netapp.SnapshotPolicy) (netapp.SnapshotPolicy, error) {
-
+func CreateANFSnapshotPolicy(ctx context.Context, resourceGroupName, accountName, policyName string, policy armnetapp.SnapshotPolicy) (*armnetapp.SnapshotPolicy, error) {
 	snapshotPolicyClient, err := getSnapshotPoliciesClient()
 	if err != nil {
-		return netapp.SnapshotPolicy{}, err
+		return nil, err
 	}
 
 	snapshotPolicy, err := snapshotPolicyClient.Create(
 		ctx,
-		policy,
 		resourceGroupName,
 		accountName,
 		policyName,
+		policy,
+		nil,
 	)
-
 	if err != nil {
-		return netapp.SnapshotPolicy{}, fmt.Errorf("cannot create snapshot policy: %v", err)
+		return nil, fmt.Errorf("cannot create snapshot policy: %v", err)
 	}
 
-	return snapshotPolicy, nil
+	return &snapshotPolicy.SnapshotPolicy, nil
 }
 
 // UpdateANFSnapshotPolicy update an ANF volume
-func UpdateANFSnapshotPolicy(ctx context.Context, resourceGroupName, accountName, policyName string, snapshotPolicyPatch netapp.SnapshotPolicyPatch) (netapp.SnapshotPoliciesUpdateFuture, error) {
-
+func UpdateANFSnapshotPolicy(ctx context.Context, resourceGroupName, accountName, policyName string, snapshotPolicyPatch armnetapp.SnapshotPolicyPatch) (*armnetapp.SnapshotPolicy, error) {
 	snapshotPolicyClient, err := getSnapshotPoliciesClient()
 	if err != nil {
-		return netapp.SnapshotPoliciesUpdateFuture{}, err
+		return nil, err
 	}
 
-	snapshotPolicy, err := snapshotPolicyClient.Update(
+	future, err := snapshotPolicyClient.BeginUpdate(
 		ctx,
-		snapshotPolicyPatch,
 		resourceGroupName,
 		accountName,
 		policyName,
+		snapshotPolicyPatch,
+		nil,
 	)
-
 	if err != nil {
-		return netapp.SnapshotPoliciesUpdateFuture{}, fmt.Errorf("cannot update snapshot policy: %v", err)
+		return nil, fmt.Errorf("cannot update snapshot policy: %v", err)
 	}
 
-	return snapshotPolicy, nil
+	resp, err := future.PollUntilDone(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.SnapshotPolicy, nil
 }
 
 // DeleteANFVolume deletes a volume
 func DeleteANFVolume(ctx context.Context, resourceGroupName, accountName, poolName, volumeName string) error {
-
 	volumesClient, err := getVolumesClient()
 	if err != nil {
 		return err
 	}
 
-	future, err := volumesClient.Delete(
+	future, err := volumesClient.BeginDelete(
 		ctx,
 		resourceGroupName,
 		accountName,
 		poolName,
 		volumeName,
+		nil,
 	)
-
 	if err != nil {
 		return fmt.Errorf("cannot delete volume: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, volumesClient.Client)
+	_, err = future.PollUntilDone(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("cannot get the volume delete future response: %v", err)
 	}
@@ -550,24 +555,23 @@ func DeleteANFVolume(ctx context.Context, resourceGroupName, accountName, poolNa
 
 // DeleteANFCapacityPool deletes a capacity pool
 func DeleteANFCapacityPool(ctx context.Context, resourceGroupName, accountName, poolName string) error {
-
 	poolsClient, err := getPoolsClient()
 	if err != nil {
 		return err
 	}
 
-	future, err := poolsClient.Delete(
+	future, err := poolsClient.BeginDelete(
 		ctx,
 		resourceGroupName,
 		accountName,
 		poolName,
+		nil,
 	)
-
 	if err != nil {
 		return fmt.Errorf("cannot delete capacity pool: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, poolsClient.Client)
+	_, err = future.PollUntilDone(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("cannot get the capacity pool delete future response: %v", err)
 	}
@@ -577,24 +581,23 @@ func DeleteANFCapacityPool(ctx context.Context, resourceGroupName, accountName, 
 
 // DeleteANFSnapshotPolicy deletes a snapshot policy
 func DeleteANFSnapshotPolicy(ctx context.Context, resourceGroupName, accountName, policyName string) error {
-
 	snapshotPolicyClient, err := getSnapshotPoliciesClient()
 	if err != nil {
 		return err
 	}
 
-	future, err := snapshotPolicyClient.Delete(
+	future, err := snapshotPolicyClient.BeginDelete(
 		ctx,
 		resourceGroupName,
 		accountName,
 		policyName,
+		nil,
 	)
-
 	if err != nil {
 		return fmt.Errorf("cannot delete snapshot policy: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, snapshotPolicyClient.Client)
+	_, err = future.PollUntilDone(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("cannot get the snapshot policy delete future response: %v", err)
 	}
@@ -604,23 +607,22 @@ func DeleteANFSnapshotPolicy(ctx context.Context, resourceGroupName, accountName
 
 // DeleteANFAccount deletes an account
 func DeleteANFAccount(ctx context.Context, resourceGroupName, accountName string) error {
-
 	accountsClient, err := getAccountsClient()
 	if err != nil {
 		return err
 	}
 
-	future, err := accountsClient.Delete(
+	future, err := accountsClient.BeginDelete(
 		ctx,
 		resourceGroupName,
 		accountName,
+		nil,
 	)
-
 	if err != nil {
 		return fmt.Errorf("cannot delete account: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, accountsClient.Client)
+	_, err = future.PollUntilDone(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("cannot get the account delete future response: %v", err)
 	}
@@ -632,7 +634,6 @@ func DeleteANFAccount(ctx context.Context, resourceGroupName, accountName string
 // This is due to a known issue related to ARM Cache where the state of the resource is still cached within ARM infrastructure
 // reporting that it still exists so looping into a get process will return 404 as soon as the cached state expires
 func WaitForNoANFResource(ctx context.Context, resourceID string, intervalInSec int, retries int, checkForReplication bool) error {
-
 	var err error
 
 	for i := 0; i < retries; i++ {
@@ -646,6 +647,7 @@ func WaitForNoANFResource(ctx context.Context, resourceID string, intervalInSec 
 				uri.GetANFCapacityPool(resourceID),
 				uri.GetANFVolume(resourceID),
 				uri.GetANFSnapshot(resourceID),
+				nil,
 			)
 		} else if uri.IsANFVolume(resourceID) {
 			client, _ := getVolumesClient()
@@ -656,14 +658,16 @@ func WaitForNoANFResource(ctx context.Context, resourceID string, intervalInSec 
 					uri.GetANFAccount(resourceID),
 					uri.GetANFCapacityPool(resourceID),
 					uri.GetANFVolume(resourceID),
+					nil,
 				)
 			} else {
-				_, err = client.ReplicationStatusMethod(
+				_, err = client.ReplicationStatus(
 					ctx,
 					uri.GetResourceGroup(resourceID),
 					uri.GetANFAccount(resourceID),
 					uri.GetANFCapacityPool(resourceID),
 					uri.GetANFVolume(resourceID),
+					nil,
 				)
 			}
 		} else if uri.IsANFCapacityPool(resourceID) {
@@ -673,6 +677,7 @@ func WaitForNoANFResource(ctx context.Context, resourceID string, intervalInSec 
 				uri.GetResourceGroup(resourceID),
 				uri.GetANFAccount(resourceID),
 				uri.GetANFCapacityPool(resourceID),
+				nil,
 			)
 		} else if uri.IsANFSnapshotPolicy(resourceID) {
 			client, _ := getSnapshotPoliciesClient()
@@ -681,6 +686,7 @@ func WaitForNoANFResource(ctx context.Context, resourceID string, intervalInSec 
 				uri.GetResourceGroup(resourceID),
 				uri.GetANFAccount(resourceID),
 				uri.GetANFSnapshotPolicy(resourceID),
+				nil,
 			)
 		} else if uri.IsANFAccount(resourceID) {
 			client, _ := getAccountsClient()
@@ -688,6 +694,7 @@ func WaitForNoANFResource(ctx context.Context, resourceID string, intervalInSec 
 				ctx,
 				uri.GetResourceGroup(resourceID),
 				uri.GetANFAccount(resourceID),
+				nil,
 			)
 		}
 
@@ -702,7 +709,6 @@ func WaitForNoANFResource(ctx context.Context, resourceID string, intervalInSec 
 
 // WaitForANFResource waits for a specified resource to be fully ready following a creation operation.
 func WaitForANFResource(ctx context.Context, resourceID string, intervalInSec int, retries int, checkForReplication bool) error {
-
 	var err error
 
 	for i := 0; i < retries; i++ {
@@ -716,6 +722,7 @@ func WaitForANFResource(ctx context.Context, resourceID string, intervalInSec in
 				uri.GetANFCapacityPool(resourceID),
 				uri.GetANFVolume(resourceID),
 				uri.GetANFSnapshot(resourceID),
+				nil,
 			)
 		} else if uri.IsANFVolume(resourceID) {
 			client, _ := getVolumesClient()
@@ -726,14 +733,16 @@ func WaitForANFResource(ctx context.Context, resourceID string, intervalInSec in
 					uri.GetANFAccount(resourceID),
 					uri.GetANFCapacityPool(resourceID),
 					uri.GetANFVolume(resourceID),
+					nil,
 				)
 			} else {
-				_, err = client.ReplicationStatusMethod(
+				_, err = client.ReplicationStatus(
 					ctx,
 					uri.GetResourceGroup(resourceID),
 					uri.GetANFAccount(resourceID),
 					uri.GetANFCapacityPool(resourceID),
 					uri.GetANFVolume(resourceID),
+					nil,
 				)
 			}
 		} else if uri.IsANFCapacityPool(resourceID) {
@@ -743,6 +752,7 @@ func WaitForANFResource(ctx context.Context, resourceID string, intervalInSec in
 				uri.GetResourceGroup(resourceID),
 				uri.GetANFAccount(resourceID),
 				uri.GetANFCapacityPool(resourceID),
+				nil,
 			)
 		} else if uri.IsANFSnapshotPolicy(resourceID) {
 			client, _ := getSnapshotPoliciesClient()
@@ -751,6 +761,7 @@ func WaitForANFResource(ctx context.Context, resourceID string, intervalInSec in
 				uri.GetResourceGroup(resourceID),
 				uri.GetANFAccount(resourceID),
 				uri.GetANFSnapshotPolicy(resourceID),
+				nil,
 			)
 		} else if uri.IsANFAccount(resourceID) {
 			client, _ := getAccountsClient()
@@ -758,6 +769,7 @@ func WaitForANFResource(ctx context.Context, resourceID string, intervalInSec in
 				ctx,
 				uri.GetResourceGroup(resourceID),
 				uri.GetANFAccount(resourceID),
+				nil,
 			)
 		}
 

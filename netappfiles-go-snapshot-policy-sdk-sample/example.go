@@ -25,8 +25,8 @@ import (
 
 	"github.com/Azure-Samples/netappfiles-go-snapshot-policy-sdk-sample/netappfiles-go-snapshot-policy-sdk-sample/internal/sdkutils"
 	"github.com/Azure-Samples/netappfiles-go-snapshot-policy-sdk-sample/netappfiles-go-snapshot-policy-sdk-sample/internal/utils"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/netapp/mgmt/netapp"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/netapp/armnetapp"
 	"github.com/yelinaung/go-haikunator"
 )
 
@@ -43,8 +43,8 @@ var (
 	volumeSizeBytes       int64 = 107374182400  // 100GiB (minimum volume size)
 	protocolTypes               = []string{"NFSv3"}
 	sampleTags                  = map[string]*string{
-		"Author":  to.StringPtr("ANF Go Snapshot Policy SDK Sample"),
-		"Service": to.StringPtr("Azure Netapp Files"),
+		"Author":  to.Ptr("ANF Go Snapshot Policy SDK Sample"),
+		"Service": to.Ptr("Azure Netapp Files"),
 	}
 
 	// ANF Resource Properties
@@ -153,44 +153,44 @@ func main() {
 	utils.ConsoleOutput(fmt.Sprintf("Creating Snapshot Policy %v...", snapshotPolicyName))
 
 	// Every 50 minutes
-	hourlySchedule := netapp.HourlySchedule{
-		Minute:          to.Int32Ptr(50),
-		SnapshotsToKeep: to.Int32Ptr(5),
+	hourlySchedule := armnetapp.HourlySchedule{
+		Minute:          to.Ptr[int32](50),
+		SnapshotsToKeep: to.Ptr[int32](5),
 	}
 
 	// Everyday at 22:00
-	dailySchedule := netapp.DailySchedule{
-		Hour:            to.Int32Ptr(22),
-		Minute:          to.Int32Ptr(0),
-		SnapshotsToKeep: to.Int32Ptr(5),
+	dailySchedule := armnetapp.DailySchedule{
+		Hour:            to.Ptr[int32](22),
+		Minute:          to.Ptr[int32](0),
+		SnapshotsToKeep: to.Ptr[int32](5),
 	}
 
 	// Everyweek on Friday at 23:00
-	weeklySchedule := netapp.WeeklySchedule{
-		Day:             to.StringPtr("Friday"),
-		Hour:            to.Int32Ptr(23),
-		Minute:          to.Int32Ptr(0),
-		SnapshotsToKeep: to.Int32Ptr(5),
+	weeklySchedule := armnetapp.WeeklySchedule{
+		Day:             to.Ptr("Friday"),
+		Hour:            to.Ptr[int32](23),
+		Minute:          to.Ptr[int32](0),
+		SnapshotsToKeep: to.Ptr[int32](5),
 	}
 
 	// Monthly on specific days (01, 15 and 25) at 08:00 AM
-	monthlySchedule := netapp.MonthlySchedule{
-		DaysOfMonth:     to.StringPtr("1,15,25"),
-		Hour:            to.Int32Ptr(8),
-		Minute:          to.Int32Ptr(0),
-		SnapshotsToKeep: to.Int32Ptr(5),
+	monthlySchedule := armnetapp.MonthlySchedule{
+		DaysOfMonth:     to.Ptr("1,15,25"),
+		Hour:            to.Ptr[int32](8),
+		Minute:          to.Ptr[int32](0),
+		SnapshotsToKeep: to.Ptr[int32](5),
 	}
 
 	// Policy body, putting everything together
-	snapshotPolicyBody := netapp.SnapshotPolicy{
-		Location: to.StringPtr(location),
-		Name:     to.StringPtr(snapshotPolicyName),
-		SnapshotPolicyProperties: &netapp.SnapshotPolicyProperties{
+	snapshotPolicyBody := armnetapp.SnapshotPolicy{
+		Location: to.Ptr(location),
+		Name:     to.Ptr(snapshotPolicyName),
+		Properties: &armnetapp.SnapshotPolicyProperties{
 			HourlySchedule:  &hourlySchedule,
 			DailySchedule:   &dailySchedule,
 			WeeklySchedule:  &weeklySchedule,
 			MonthlySchedule: &monthlySchedule,
-			Enabled:         to.BoolPtr(true),
+			Enabled:         to.Ptr(true),
 		},
 		Tags: sampleTags,
 	}
@@ -220,9 +220,9 @@ func main() {
 	utils.ConsoleOutput(fmt.Sprintf("Creating NFSv3 Volume %v with Snapshot Policy %v attached...", volumeName, snapshotPolicyName))
 
 	// Build data protection object with snapshot properties
-	dataProtectionObject := netapp.VolumePropertiesDataProtection{
-		Snapshot: &netapp.VolumeSnapshotProperties{
-			SnapshotPolicyID: to.StringPtr(snapshotPolicyID),
+	dataProtectionObject := armnetapp.VolumePropertiesDataProtection{
+		Snapshot: &armnetapp.VolumeSnapshotProperties{
+			SnapshotPolicyID: to.Ptr(snapshotPolicyID),
 		},
 	}
 
@@ -269,13 +269,13 @@ func main() {
 	utils.ConsoleOutput(fmt.Sprintf("Updating snapshot policy %v...", snapshotPolicyName))
 
 	// Updating number of snapshots to keep for hourly schedule
-	newHourlySchedule := *snapshotPolicy.SnapshotPolicyProperties.HourlySchedule
-	newHourlySchedule.SnapshotsToKeep = to.Int32Ptr(10)
+	newHourlySchedule := *snapshotPolicy.Properties.HourlySchedule
+	newHourlySchedule.SnapshotsToKeep = to.Ptr[int32](10)
 
 	// Creating a patch object
-	snapshotPolicyPatch := netapp.SnapshotPolicyPatch{
-		Location: to.StringPtr(location),
-		SnapshotPolicyProperties: &netapp.SnapshotPolicyProperties{
+	snapshotPolicyPatch := armnetapp.SnapshotPolicyPatch{
+		Location: to.Ptr(location),
+		Properties: &armnetapp.SnapshotPolicyProperties{
 			HourlySchedule: &newHourlySchedule,
 		},
 	}
